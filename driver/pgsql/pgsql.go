@@ -84,7 +84,7 @@ func (pd *pgsqlDriver) doTouch(fn func(db *sql.DB) bool) bool {
 func (pd *pgsqlDriver) Lock(name, value string, expiry time.Duration) (ok bool, wait time.Duration) {
 	msExpiry := int(expiry / time.Millisecond)
 	return pd.doLock(func(db *sql.DB) (wait int) {
-		err := db.QueryRow("SELECT common_distlock.lock($1, $2, $3);", name, value, msExpiry).Scan(&wait)
+		err := db.QueryRow("SELECT distlock.lock($1, $2, $3);", name, value, msExpiry).Scan(&wait)
 		if err != nil {
 			wait = -1 // less than zero, use the default wait duration
 			fmt.Println("Lock err", name, err)
@@ -97,7 +97,7 @@ func (pd *pgsqlDriver) Unlock(name, value string) {
 	channel := pd.channelName(name)
 	for _, db := range pd.dbs {
 		var res bool
-		err := db.QueryRow("SELECT common_distlock.unlock($1, $2, $3);", name, value, channel).Scan(&res)
+		err := db.QueryRow("SELECT distlock.unlock($1, $2, $3);", name, value, channel).Scan(&res)
 		if err != nil {
 			fmt.Println("Unlock err", name, err)
 		}
@@ -107,7 +107,7 @@ func (pd *pgsqlDriver) Unlock(name, value string) {
 func (pd *pgsqlDriver) Touch(name, value string, expiry time.Duration) (ok bool) {
 	msExpiry := int(expiry / time.Millisecond)
 	return pd.doTouch(func(db *sql.DB) (ok bool) {
-		err := db.QueryRow("SELECT common_distlock.touch($1, $2, $3);", name, value, msExpiry).Scan(&ok)
+		err := db.QueryRow("SELECT distlock.touch($1, $2, $3);", name, value, msExpiry).Scan(&ok)
 		if err != nil {
 			fmt.Println("Touch err", name, err)
 		}
@@ -118,7 +118,7 @@ func (pd *pgsqlDriver) Touch(name, value string, expiry time.Duration) (ok bool)
 func (pd *pgsqlDriver) RLock(name, value string, expiry time.Duration) (ok bool, wait time.Duration) {
 	msExpiry := int(expiry / time.Millisecond)
 	return pd.doLock(func(db *sql.DB) (wait int) {
-		err := db.QueryRow("SELECT common_distlock.rlock($1, $2, $3);", name, value, msExpiry).Scan(&wait)
+		err := db.QueryRow("SELECT distlock.rlock($1, $2, $3);", name, value, msExpiry).Scan(&wait)
 		if err != nil {
 			wait = -1 // less than zero, use the default wait duration
 			fmt.Println("RLock err", name, err)
@@ -131,7 +131,7 @@ func (pd *pgsqlDriver) RUnlock(name, value string) {
 	channel := pd.channelName(name)
 	for _, db := range pd.dbs {
 		var res bool
-		err := db.QueryRow("SELECT common_distlock.runlock($1, $2, $3, $4);", name, value, channel, MaxReaders).Scan(&res)
+		err := db.QueryRow("SELECT distlock.runlock($1, $2, $3, $4);", name, value, channel, MaxReaders).Scan(&res)
 		if err != nil {
 			fmt.Println("RUnlock err", name, err)
 		}
@@ -141,7 +141,7 @@ func (pd *pgsqlDriver) RUnlock(name, value string) {
 func (pd *pgsqlDriver) RTouch(name, value string, expiry time.Duration) (ok bool) {
 	msExpiry := int(expiry / time.Millisecond)
 	return pd.doTouch(func(db *sql.DB) (ok bool) {
-		err := db.QueryRow("SELECT common_distlock.rwtouch($1, $2, $3);", name, value, msExpiry).Scan(&ok)
+		err := db.QueryRow("SELECT distlock.rwtouch($1, $2, $3);", name, value, msExpiry).Scan(&ok)
 		if err != nil {
 			fmt.Println("RTouch err", name, err)
 		}
@@ -152,7 +152,7 @@ func (pd *pgsqlDriver) RTouch(name, value string, expiry time.Duration) (ok bool
 func (pd *pgsqlDriver) WLock(name, value string, expiry time.Duration) (ok bool, wait time.Duration) {
 	msExpiry := int(expiry / time.Millisecond)
 	return pd.doLock(func(db *sql.DB) (wait int) {
-		err := db.QueryRow("SELECT common_distlock.wlock($1, $2, $3, $4);", name, value, msExpiry, MaxReaders).Scan(&wait)
+		err := db.QueryRow("SELECT distlock.wlock($1, $2, $3, $4);", name, value, msExpiry, MaxReaders).Scan(&wait)
 		if err != nil {
 			wait = -1 // less than zero, use the default wait duration
 			fmt.Println("WLock err", name, err)
@@ -165,7 +165,7 @@ func (pd *pgsqlDriver) WUnlock(name, value string) {
 	channel := pd.channelName(name)
 	for _, db := range pd.dbs {
 		var res bool
-		err := db.QueryRow("SELECT common_distlock.wunlock($1, $2, $3, $4);", name, value, channel, MaxReaders).Scan(&res)
+		err := db.QueryRow("SELECT distlock.wunlock($1, $2, $3, $4);", name, value, channel, MaxReaders).Scan(&res)
 		if err != nil {
 			fmt.Println("WUnlock err", name, err)
 		}
