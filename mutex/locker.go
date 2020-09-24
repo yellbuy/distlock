@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-locks/distlock/driver"
+	"github.com/yellbuy/distlock/driver"
 )
 
 type locker struct {

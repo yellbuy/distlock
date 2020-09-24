@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-locks/distlock/driver"
+	"github.com/yellbuy/distlock/driver"
 )
 
 /* localReadMtx transform the read part of sync.RWMutex to sync.Locker

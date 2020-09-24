@@ -3,7 +3,7 @@ package distlock
 import (
 	"testing"
 
-	"github.com/go-locks/distlock/driver/mocks"
+	"github.com/yellbuy/distlock/driver/mocks"
 	"github.com/stretchr/testify/mock"
 )
 

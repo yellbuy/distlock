@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-locks/distlock/driver"
-	"github.com/go-locks/distlock/driver/mocks"
 	"github.com/stretchr/testify/mock"
+	"github.com/yellbuy/distlock/driver"
+	"github.com/yellbuy/distlock/driver/mocks"
 )
 
 var name = "test"

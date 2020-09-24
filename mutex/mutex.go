@@ -3,7 +3,7 @@ package mutex
 import (
 	"sync"
 
-	"github.com/go-locks/distlock/driver"
+	"github.com/yellbuy/distlock/driver"
 )
 
 type Mutex struct{ internal }

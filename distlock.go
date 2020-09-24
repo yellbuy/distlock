@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/go-locks/distlock/driver"
-	"github.com/go-locks/distlock/mutex"
+	"github.com/yellbuy/distlock/driver"
+	"github.com/yellbuy/distlock/mutex"
 )
 
 type Distlock struct {
