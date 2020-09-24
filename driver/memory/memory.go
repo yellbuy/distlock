@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
@@ -9,12 +10,12 @@ import (
 type memoryDriver struct {
 	localLockMap map[string]*lock
 	globalLock   sync.Mutex
+	expireTime   int64
 }
 
 type lock struct {
-	mux        *sync.Mutex
-	refCount   int
-	expireTime int64
+	mux      *sync.Mutex
+	refCount int
 }
 
 func New() *memoryDriver {
@@ -26,17 +27,19 @@ func (km *memoryDriver) Lock(name, value string, expiry time.Duration) (ok bool,
 
 	wl, locked := km.localLockMap[name]
 	ok = false
+	curUnix := time.Now().UnixNano()
 	if !locked {
 		wl = &lock{
-			mux:        new(sync.Mutex),
-			refCount:   0,
-			expireTime: time.Now().Unix() + expiry.Nanoseconds(),
+			mux:      new(sync.Mutex),
+			refCount: 0,
 		}
+		km.expireTime = curUnix + expiry.Nanoseconds()
 		km.localLockMap[name] = wl
 		ok = true
 	} else {
-		if wl.expireTime < time.Now().Unix() {
-			wl.expireTime = time.Now().Unix() + expiry.Nanoseconds()
+		if km.expireTime < curUnix {
+			km.expireTime = curUnix + expiry.Nanoseconds()
+			wl.refCount = 0
 			km.localLockMap[name] = wl
 			ok = true
 		}
@@ -45,9 +48,7 @@ func (km *memoryDriver) Lock(name, value string, expiry time.Duration) (ok bool,
 	wl.refCount++
 
 	km.globalLock.Unlock()
-
-	wl.mux.Lock()
-	wait = time.Duration(wl.expireTime-time.Now().Unix()) * time.Nanosecond
+	wait = time.Duration(km.expireTime-curUnix) * time.Nanosecond
 	return
 }
 
@@ -64,23 +65,25 @@ func (km *memoryDriver) Unlock(name, value string) {
 	wl.refCount--
 
 	if wl.refCount <= 0 {
+		// curUnix := time.Now().UnixNano()
+		// wait := time.Duration(wl.expireTime-curUnix) * time.Nanosecond
+		// time.Sleep(wait)
 		delete(km.localLockMap, name)
 	}
 
 	km.globalLock.Unlock()
-
-	wl.mux.Unlock()
 }
 
 func (km *memoryDriver) Touch(name, value string, expiry time.Duration) (ok bool) {
 	km.globalLock.Lock()
 	ok = false
-	wl, locked := km.localLockMap[name]
+	_, locked := km.localLockMap[name]
 	if locked {
-		if wl.expireTime < time.Now().Unix() {
+		if km.expireTime < time.Now().Unix() {
 			ok = true
 		}
 	}
+	km.globalLock.Unlock()
 	return
 }
 
@@ -109,5 +112,8 @@ func (km *memoryDriver) WTouch(name, value string, expiry time.Duration) (ok boo
 }
 
 func (km *memoryDriver) Watch(name string) <-chan struct{} {
-	panic("未实现")
+	fmt.Println("Watch ", name)
+	outChan := make(chan struct{})
+	//outChan <- struct{}{}
+	return outChan
 }
