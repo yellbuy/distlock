@@ -35,12 +35,13 @@ func TestMemoryDriver_TryLock(t *testing.T) {
 func TestMemoryDriver_Lock(t *testing.T) {
 	var memoryDriver = New()
 	locker := distlock.New(memoryDriver)
-	mtx, err := locker.NewMutex("demo", mutex.Expiry(time.Second*5), mutex.Factor(0.30))
+	mtx, err := locker.NewMutex("demo", mutex.Expiry(time.Second*5))
 	if err != nil {
 		t.Errorf("err: [%v]", err)
 	}
+	fmt.Println("mtx")
 	mtx.Lock()
-	mtx2, err := locker.NewMutex("demo", mutex.Expiry(time.Second*5), mutex.Factor(0.30))
+	mtx2, err := locker.NewMutex("demo", mutex.Expiry(time.Second*5))
 	if err != nil {
 		t.Errorf("err: [%v]", err)
 	}
@@ -48,13 +49,25 @@ func TestMemoryDriver_Lock(t *testing.T) {
 	if ok {
 		t.Errorf("err: expect value:false,actual value:%v", ok)
 	}
-	mtx3, err := locker.NewMutex("demo", mutex.Expiry(time.Second*5), mutex.Factor(0.30))
+	fmt.Println("mtx2")
+	mtx3, err := locker.NewMutex("demo", mutex.Expiry(time.Second*5))
 	if err != nil {
 		t.Errorf("err: [%v]", err)
 	}
+
 	mtx3.Lock()
+	fmt.Println("mtx3")
+	mtx.Unlock()
+	mtx4, err := locker.NewMutex("demo", mutex.Expiry(time.Second*5))
+	if err != nil {
+		t.Errorf("err: [%v]", err)
+	}
+
+	mtx4.Lock()
+	fmt.Println("mtx4")
+
 	fmt.Println("end")
-	defer mtx3.Unlock()
+	defer mtx4.Unlock()
 	defer mtx.Unlock()
 	defer mtx2.Unlock()
 }
