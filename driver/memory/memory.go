@@ -112,7 +112,7 @@ func (km *memoryDriver) WTouch(name, value string, expiry time.Duration) (ok boo
 }
 
 func (km *memoryDriver) Watch(name string) <-chan struct{} {
-	fmt.Println("Watch ", name)
+	//fmt.Println("Watch ", name)
 	outChan := make(chan struct{})
 	//outChan <- struct{}{}
 	return outChan
